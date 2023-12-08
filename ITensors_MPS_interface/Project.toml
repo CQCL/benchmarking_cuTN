@@ -1,0 +1,16 @@
+name = "ITensors_MPS_interface"
+uuid = "eb2a7587-9a7e-42a5-bdea-b3b2b4b62a29"
+authors = ["Pablo Andres-Martinez"]
+version = "1.0.0-DEV"
+
+[deps]
+ITensors = "9136182c-28ba-11e9-034c-db9fb085ebd5"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
