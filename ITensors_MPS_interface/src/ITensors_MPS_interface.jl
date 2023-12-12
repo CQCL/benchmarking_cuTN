@@ -46,26 +46,30 @@ function simulate(n_qubits::Int64, circuit, chi::Int64)
     site_inds = siteinds("Qubit", n_qubits)
     gates::Vector{ITensor} = []
 
-    for (name, qubits, params) in circuit
-        if name == "Rz"
-            append!(gates, [op("TKET_Rz", site_inds, 1+qubits[1]; α=params[1])])
-        elseif name == "Rx"
-            append!(gates, [op("TKET_Rx", site_inds, 1+qubits[1]; α=params[1])])
-        elseif name == "ZZPhase"
-            append!(gates, [op("TKET_ZZPhase", site_inds, 1+qubits[1], 1+qubits[2]; α=params[1])])
-        elseif name == "XXPhase"
-            append!(gates, [op("TKET_XXPhase", site_inds, 1+qubits[1], 1+qubits[2]; α=params[1])])
-        elseif name == "SWAP"
-            append!(gates, [op("SWAP", site_inds, 1+qubits[1], 1+qubits[2])])
-        else
-            error("KernelPkg error: Unrecognised gate.")
+    duration = @elapsed begin
+        for (name, qubits, params) in circuit
+            if name == "Rz"
+                append!(gates, [op("TKET_Rz", site_inds, 1+qubits[1]; α=params[1])])
+            elseif name == "Rx"
+                append!(gates, [op("TKET_Rx", site_inds, 1+qubits[1]; α=params[1])])
+            elseif name == "ZZPhase"
+                append!(gates, [op("TKET_ZZPhase", site_inds, 1+qubits[1], 1+qubits[2]; α=params[1])])
+            elseif name == "XXPhase"
+                append!(gates, [op("TKET_XXPhase", site_inds, 1+qubits[1], 1+qubits[2]; α=params[1])])
+            elseif name == "SWAP"
+                append!(gates, [op("SWAP", site_inds, 1+qubits[1], 1+qubits[2])])
+            else
+                error("KernelPkg error: Unrecognised gate.")
+            end
         end
-    end
+    end  # elapsed
 
     # Simulate the circuit
     ψ = apply(gates, MPS(site_inds, "0"); maxdim=chi)
 
-    return abs(inner(ψ, ψ))
+    fidelity = abs(inner(ψ, ψ))
+
+    return [duration, fidelity]
 end
 
 end  #module
