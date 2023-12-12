@@ -25,7 +25,7 @@ For *ITensors.jl*, enter the Julia REPL and press `]` to enter the package manag
 ### Installing ITensors_MPS_interface.jl
 
 Install pyCall:
-- `pip install Julia`
+- `pip install julia`
 - In Python REPL, `import julia` followed by `julia.install()`
 
 Test pyCall installation was successful by entering the Python REPL and typing:
