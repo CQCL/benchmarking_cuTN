@@ -64,12 +64,13 @@ function simulate(n_qubits::Int64, circuit, chi::Int64)
 
     # Simulate the circuit
     duration = @elapsed begin
-      ψ = apply(gates, MPS(site_inds, "0"); maxdim=chi)
+        for g in gates
+            ψ = apply(g, MPS(site_inds, "0"); maxdim=chi, cutoff=1e-16)
+            normalize!(ψ)
+        end
     end  # elapsed
 
-    fidelity = abs(inner(ψ, ψ))
-
-    return [duration, fidelity]
+    return duration
 end
 
 end  #module

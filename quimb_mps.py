@@ -50,7 +50,7 @@ with open(f"{data_name}_{rank}", "a") as data:
 
     try:
       start_time = t.time()
-      mps = CircuitMPS(circ.n_qubits, gate_opts={"max_bond": chi, "renorm": 0})  # We choose not to renormalise, so that we can estimate the fidelity at the end fr>two_qubit_count = 0
+      mps = CircuitMPS(circ.n_qubits, gate_opts={"max_bond": chi, "cutoff_mode": "abs", "cutoff": 1e-16, "renorm": 1})
 
       for i, gate in enumerate(circ.get_commands()):
         if gate.op.type == OpType.Rx:
@@ -65,9 +65,8 @@ with open(f"{data_name}_{rank}", "a") as data:
             raise Exception(f"Unknown gate {gate.op.type}")
 
       duration = t.time() - start_time
-      fidelity = mps.psi.H @ mps.psi
 
-      entry = f"{filename} {duration} {fidelity}\n"
+      entry = f"{filename} {duration} nan\n"
       data.write(entry)
       data.flush()
 
