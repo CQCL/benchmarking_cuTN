@@ -27,9 +27,12 @@ data_name = f"Results/tmp/quimb_chi_{chi}.dat"
 # Figure out which circuits have already been simulated
 already_simulated = []
 for r in range(n_procs):
-    with open(f"{data_name}_{r}", "r") as f:
-        lines = f.readlines()
-        already_simulated += [l.split()[0] for l in lines]
+    try:
+        with open(f"{data_name}_{r}", "r") as f:
+            lines = f.readlines()
+            already_simulated += [l.split()[0] for l in lines]
+    except FileNotFoundError:
+        continue
 
 # Simulate the rest
 with open(f"{data_name}_{rank}", "a") as data:
