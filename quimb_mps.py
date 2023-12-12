@@ -37,10 +37,11 @@ with open(f"Results/tmp/quimb_chi_{chi}.dat_{rank}", "a") as data:
     circ = cirq_to_tk(cirq.read_json("Circuits/"+filename))
     circ, _ = prepare_circuit(circ)
 
-    start_time = t.time()
+    try:
+      start_time = t.time()
+      mps = CircuitMPS(circ.n_qubits, gate_opts={"max_bond": chi, "renorm": 0})  # We choose not to renormalise, so that we can estimate the fidelity at the end fr>two_qubit_count = 0
 
-    mps = CircuitMPS(circ.n_qubits, gate_opts={"max_bond": chi, "renorm": 0})  # We choose not to renormalise, so that we can estimate the fidelity at the end fr>two_qubit_count = 0
-    for i, gate in enumerate(circ.get_commands()):
+      for i, gate in enumerate(circ.get_commands()):
         if gate.op.type == OpType.Rx:
             mps.rx(math.pi*gate.op.params[0], gate.qubits[0].index[0])
         elif gate.op.type == OpType.ZZPhase:
@@ -52,9 +53,14 @@ with open(f"Results/tmp/quimb_chi_{chi}.dat_{rank}", "a") as data:
         else:
             raise Exception(f"Unknown gate {gate.op.type}")
 
-    duration = t.time() - start_time
-    fidelity = mps.psi.H @ mps.psi
+      duration = t.time() - start_time
+      fidelity = mps.psi.H @ mps.psi
 
-    entry = f"{filename} {duration} {fidelity}\n"
-    data.write(entry)
-    data.flush()
+      entry = f"{filename} {duration} {fidelity}\n"
+      data.write(entry)
+      data.flush()
+
+    except Exception as e:
+      print(f"Failed! {filename}, {e}")
+      data.write(f"{filename} nan nan\n")
+      data.flush()

@@ -31,13 +31,19 @@ with open(f"Results/tmp/pytket-cutn_chi_{chi}.dat_{rank}", "a") as data:
     circ = cirq_to_tk(cirq.read_json("Circuits/"+filename))
     circ, _ = prepare_circuit(circ)
 
-    start_time = t.time()
-    with CuTensorNetHandle(rank) as libhandle:
-        cfg = ConfigMPS(chi=chi)
-        mps = simulate(libhandle, circ, ContractionAlg.MPSxGate, cfg)
-    duration = t.time() - start_time
-    fidelity = mps.fidelity
+    try:
+      start_time = t.time()
+      with CuTensorNetHandle(rank) as libhandle:
+          cfg = ConfigMPS(chi=chi)
+          mps = simulate(libhandle, circ, ContractionAlg.MPSxGate, cfg)
+      duration = t.time() - start_time
+      fidelity = mps.fidelity
 
-    entry = f"{filename} {duration} {fidelity}\n"
-    data.write(entry)
-    data.flush()
+      entry = f"{filename} {duration} {fidelity}\n"
+      data.write(entry)
+      data.flush()
+
+    except Exception as e:
+      print(f"Failed! {filename}, {e}")
+      data.write(f"{filename} nan nan\n")
+      data.flush()

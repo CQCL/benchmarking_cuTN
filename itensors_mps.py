@@ -52,10 +52,16 @@ with open(f"Results/tmp/itensors_chi_{chi}.dat_{rank}", "a") as data:
         else:
             raise Exception(f"Unknown gate {gate.op.type}")
 
-    results = ITensors_MPS_interface.simulate(circ.n_qubits, gates, chi)
-    duration = results[0]
-    fidelity = results[1]
+    try:
+      results = ITensors_MPS_interface.simulate(circ.n_qubits, gates, chi)
+      duration = results[0]
+      fidelity = results[1]
 
-    entry = f"{filename} {duration} {fidelity}\n"
-    data.write(entry)
-    data.flush()
+      entry = f"{filename} {duration} {fidelity}\n"
+      data.write(entry)
+      data.flush()
+
+    except Exception as e:
+      print(f"Failed! {filename}, {e}")
+      data.write(f"{filename} nan nan\n")
+      data.flush()
