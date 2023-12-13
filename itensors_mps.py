@@ -67,9 +67,11 @@ with open(f"{data_name}_{rank}", "a") as data:
             raise Exception(f"Unknown gate {gate.op.type}")
 
     try:
-      duration = ITensors_MPS_interface.simulate(circ.n_qubits, gates, chi)
+      results = ITensors_MPS_interface.simulate(circ.n_qubits, gates, chi)
+      duration = results[0]
+      fidelity = results[1]
 
-      entry = f"{filename} {duration} nan\n"
+      entry = f"{filename} {duration} {fidelity}\n"
       data.write(entry)
       data.flush()
 
