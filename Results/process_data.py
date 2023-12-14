@@ -10,7 +10,7 @@ from pytket.circuit import OpType
 
 chi = 300
 
-succ_files = {"itensors": f"succ_itensors_chi_{chi}.dat", "quimb": f"succ_quimb_chi_{chi}.dat", "pytket-cutn": f"succ_pytket-cutn_chi_{chi}.dat"}
+succ_files = {"itensors": f"clean_itensors_chi_{chi}.dat", "quimb": f"clean_quimb_chi_{chi}.dat", "pytket-cutn": f"clean_pytket-cutn_chi_{chi}.dat"}
 
 
 # Gather the properties of all circuits

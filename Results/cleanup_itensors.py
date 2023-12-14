@@ -2,12 +2,11 @@
 file = "itensors_chi_300.dat"
 
 with open(file, "r") as fin:
-  with open("succ_"+file, "w") as fout:
-    with open("failed_"+file, "w") as ffail:
+  with open("clean_"+file, "w") as fout:
       lines = fin.readlines()
 
       for l in lines:
-        if len(l.split()) > 1:
+        if len(l.split()) > 1 and l.split()[1] != "nan":
           fout.write(l)
         else:
-          ffail.write(l)
+          print("Warning! an unexpected circuit failed!")
