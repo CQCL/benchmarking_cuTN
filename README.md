@@ -38,3 +38,19 @@ Base.sind(60)
 
 Move the contents of the folder `ITensors_MPS_interface` in this repository to `~/.julia/dev/ITensors_MPS_interface`. Then, open the Julia REPL and press `]` to enter the package manager. Locally install the package by typing:
  `dev ~/.julia/dev/ITensors_MPS_interface`.
+
+## Contents
+
+The three `*_mps.py` files at the root of this repository each run the circuits with a different library (pytket-cutensornet, ITensors and Quimb). The folder `ITensors_MPS_interface` contains the Julia package that interfaces between ITensors and `itensors_mps.py`.
+
+### Circuits
+
+To be added to repository.
+
+### Results
+
+The `Results` folder contains a CSV file with the results, along with the scripts necessary to create this CSV from the output of the different `*_mps.py` files at the root of this repository. The script `create_plots.py` reads the CSV file and generates some relevant figures; the directory `Results/Figures` contains the these.
+
+![Comparison of pytket-cutensornet versus ITensors](https://github.com/CQCL/benchmarking_cuTN/blob/main/Results/Figures/cutn_ITensors.png)
+
+The results show that the MPS algorithm in pytket-cutensornet runs faster than the same MPS algorithm implemented ITensors and Quimb. Most of the time, pytket-cutensornet takes 30% of the runtime of ITensors and 10% of the runtime of Quimb. This speed up is attributed to the use of cuTensorNet and NVIDIA GPUs.
