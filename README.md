@@ -45,7 +45,7 @@ The three `*_mps.py` files at the root of this repository each run the circuits 
 
 ### Circuits
 
-To be added to repository.
+The circuits used for the benchmarking can be found in the ZIP file `Circuits.zip`. Unzip and make sure the corresponding JSON files representing the circuits are all contained within a `Circuits/` folder at the root of the repository. These circuits are for Hamiltonian simulation on 2D lattices; all of them have 56 qubits and use the gateset `{Rz, Rx, ZZPhase, XXPhase}`.
 
 ### Results
 
