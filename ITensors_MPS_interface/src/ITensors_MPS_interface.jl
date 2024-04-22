@@ -1,7 +1,8 @@
 module ITensors_MPS_interface
 
-using ITensors
 using JSON3
+using ITensors
+using ITensorGPU
 
 export simulate
 
@@ -62,25 +63,25 @@ function simulate(file_path::String; chi=nothing, trunc_error=nothing)
 
         if gate_type == "Rz"
             angle = parse(Float64, cmd["op"]["params"][1])
-            append!(gates, [op("TKET_Rz", site_inds, q0; α=angle)])
+            append!(gates, [cu(ITensors.op("TKET_Rz", site_inds, q0; α=angle))])
         elseif gate_type == "Rx"
             angle = parse(Float64, cmd["op"]["params"][1])
-            append!(gates, [op("TKET_Rx", site_inds, q0; α=angle)])
+            append!(gates, [cu(ITensors.op("TKET_Rx", site_inds, q0; α=angle))])
         elseif gate_type == "ZZPhase"
             angle = parse(Float64, cmd["op"]["params"][1])
-            append!(gates, [op("TKET_ZZPhase", site_inds, q0, q1; α=angle)])
+            append!(gates, [cu(ITensors.op("TKET_ZZPhase", site_inds, q0, q1; α=angle))])
         elseif gate_type == "XXPhase"
             angle = parse(Float64, cmd["op"]["params"][1])
-            append!(gates, [op("TKET_XXPhase", site_inds, q0, q1; α=angle)])
+            append!(gates, [cu(ITensors.op("TKET_XXPhase", site_inds, q0, q1; α=angle))])
         elseif gate_type == "SWAP"
-            append!(gates, [op("SWAP", site_inds, q0, q1)])
+            append!(gates, [cu(ITensors.op("SWAP", site_inds, q0, q1))])
         else
-            error("KernelPkg error: Unrecognised gate.")
+            throw("Unrecognised gate.")
         end
     end
 
     # Simulate the circuit
-    ψ = MPS(site_inds, "0")
+    ψ = cu(MPS(site_inds, "0"))
     duration = 0
     if !isnothing(chi) && isnothing(trunc_error)
         duration = @elapsed begin
