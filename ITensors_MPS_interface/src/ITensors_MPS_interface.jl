@@ -1,6 +1,7 @@
 module ITensors_MPS_interface
 
 using ITensors
+using JSON3
 
 export simulate
 
@@ -42,21 +43,37 @@ function ITensors.op(::OpName"TKET_XXPhase", t::SiteType"Qubit"; α::Number)
 end
 
 # Build and simulate the given circuit (as a list of gates)
-function simulate(n_qubits::Int64, circuit, chi::Int64)
+function simulate(file_path::String; chi=nothing, trunc_error=nothing)
+    
+    circ_json = JSON3.read(file_path)
+    n_qubits = length(circ_json["qubits"])
+
     site_inds = siteinds("Qubit", n_qubits)
     gates::Vector{ITensor} = []
 
-    for (name, qubits, params) in circuit
-        if name == "Rz"
-            append!(gates, [op("TKET_Rz", site_inds, 1+qubits[1]; α=params[1])])
-        elseif name == "Rx"
-            append!(gates, [op("TKET_Rx", site_inds, 1+qubits[1]; α=params[1])])
-        elseif name == "ZZPhase"
-            append!(gates, [op("TKET_ZZPhase", site_inds, 1+qubits[1], 1+qubits[2]; α=params[1])])
-        elseif name == "XXPhase"
-            append!(gates, [op("TKET_XXPhase", site_inds, 1+qubits[1], 1+qubits[2]; α=params[1])])
-        elseif name == "SWAP"
-            append!(gates, [op("SWAP", site_inds, 1+qubits[1], 1+qubits[2])])
+    for cmd in circ_json["commands"]
+        gate_type = cmd["op"]["type"]
+        q0 = 1 + cmd["args"][1][2][1]
+        q1 = 0
+        if length(cmd["args"]) == 2
+            q1 = 1 + cmd["args"][2][2][1]
+            @assert q0-q1==1 || q1-q0==1
+        end
+
+        if gate_type == "Rz"
+            angle = parse(Float64, cmd["op"]["params"][1])
+            append!(gates, [op("TKET_Rz", site_inds, q0; α=angle)])
+        elseif gate_type == "Rx"
+            angle = parse(Float64, cmd["op"]["params"][1])
+            append!(gates, [op("TKET_Rx", site_inds, q0; α=angle)])
+        elseif gate_type == "ZZPhase"
+            angle = parse(Float64, cmd["op"]["params"][1])
+            append!(gates, [op("TKET_ZZPhase", site_inds, q0, q1; α=angle)])
+        elseif gate_type == "XXPhase"
+            angle = parse(Float64, cmd["op"]["params"][1])
+            append!(gates, [op("TKET_XXPhase", site_inds, q0, q1; α=angle)])
+        elseif gate_type == "SWAP"
+            append!(gates, [op("SWAP", site_inds, q0, q1)])
         else
             error("KernelPkg error: Unrecognised gate.")
         end
@@ -64,16 +81,20 @@ function simulate(n_qubits::Int64, circuit, chi::Int64)
 
     # Simulate the circuit
     ψ = MPS(site_inds, "0")
-    fidelity = 1.0
-    duration = @elapsed begin
-        for g in gates
-            ψ = apply(g, ψ; maxdim=chi, cutoff=1e-16)
-            fidelity = fidelity * norm(ψ)^2
-            normalize!(ψ)
-        end
-    end  # elapsed
+    duration = 0
+    if !isnothing(chi) && isnothing(trunc_error)
+        duration = @elapsed begin
+            ψ = apply(gates, ψ; maxdim=chi)
+        end  # elapsed
+    elseif !isnothing(trunc_error) && isnothing(chi)
+        duration = @elapsed begin
+            ψ = apply(gates, ψ; cutoff=trunc_error)
+        end  # elapsed
+    else
+        throw("Please choose a value for either chi or trunc_error")
+    end
 
-    return [duration, fidelity]
+    return [duration, norm(ψ)^2]
 end
 
 end  #module
