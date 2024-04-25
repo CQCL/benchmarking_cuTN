@@ -4,6 +4,7 @@ import json
 import time as t
 
 from mpi4py import MPI
+from cupy.cuda.runtime import getDeviceCount
 
 from pytket import Circuit
 from pytket.extensions.cutensornet.structured_state import SimulationAlgorithm, simulate, Config, CuTensorNetHandle
@@ -29,17 +30,17 @@ else:
 
 rank = comm.Get_rank()
 n_procs = comm.Get_size()
+device_id = rank % getDeviceCount()
 
 directory = Path("selected_circs/")
 
-with open("our_results.csv", "a") as data:
-  for k, file_path in enumerate(directory.iterdir()):
+for k, file_path in enumerate(directory.iterdir()):
     if k % n_procs != rank: continue  # Skip if this process is not responsible of simulating this circuit
 
     with open(file_path, "r") as f:
         circ = Circuit.from_dict(json.load(f))
 
-    with CuTensorNetHandle(rank) as libhandle:
+    with CuTensorNetHandle(device_id) as libhandle:
         cfg = Config(
             chi=chi,
             truncation_fidelity=truncation_fidelity,
@@ -53,12 +54,13 @@ with open("our_results.csv", "a") as data:
 
             filename = str(file_path).split("/")[-1]
             entry = f"{filename},OURS,{trunc_mode},{param},{duration},{fidelity}\n"
-            data.write(entry)
-            data.flush()
             print(entry)
             sys.stdout.flush()
 
         except Exception as e:
+            entry = f"{filename},OURS,{trunc_mode},{param},nan,nan\n"
             print(f"Failed! {filename}, {e}")
-            data.write(f"{filename},OURS,{trunc_mode},{param},nan,nan\n")
-            data.flush()
+            sys.stdout.flush()
+
+with open("results_ours.csv", "a") as data:
+    data.write(entry)
