@@ -2,7 +2,7 @@ module ITensors_MPS_interface
 
 using JSON3
 using ITensors
-using ITensorGPU
+using CUDA
 
 export simulate
 
@@ -51,7 +51,7 @@ function simulate(file_path::String, processor::String; chi=nothing, trunc_error
 
     proc = nothing
     if processor == "CPU"
-        proc = cpu
+        proc = identity
     elseif processor == "GPU"
         proc = cu
     else
@@ -104,7 +104,12 @@ function simulate(file_path::String, processor::String; chi=nothing, trunc_error
         throw("Please choose a value for either chi or trunc_error")
     end
 
-    return [duration, norm(ψ)^2]
+    fidelity = -1
+    if processor == "CPU"
+        fidelity = norm(ψ)^2
+    end
+
+    return [duration, fidelity]
 end
 
 end  #module
