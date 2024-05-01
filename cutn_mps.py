@@ -52,7 +52,7 @@ for i in range(num_qubits):
     mps_tensor_strides.append([stride_in_bytes // tensor.itemsize for stride_in_bytes in tensor.strides])
 
 free_mem = dev.mem_info[0]
-# use half of the totol free size
+# use half of the total free size
 scratch_size = free_mem // 2
 scratch_space = cp.cuda.alloc(scratch_size)
 print(f"Allocated {scratch_size} bytes of scratch memory on GPU")
@@ -120,7 +120,7 @@ print("Set the final MPS representation")
 
 # Configure the MPS computation
 svd_algorithm_dtype = cutn.state_get_attribute_dtype(cutn.StateAttribute.MPS_SVD_CONFIG_ALGO)
-svd_algorithm = np.array(cutn.TensorSVDAlgo.GESVDJ, dtype=svd_algorithm_dtype)
+svd_algorithm = np.array(cutn.TensorSVDAlgo.GESVD, dtype=svd_algorithm_dtype)
 cutn.state_configure(handle, quantum_state,
     cutn.StateAttribute.MPS_SVD_CONFIG_ALGO, svd_algorithm.ctypes.data, svd_algorithm.dtype.itemsize)
 
