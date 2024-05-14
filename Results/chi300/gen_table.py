@@ -18,3 +18,4 @@ merged_cutn_df = pd.merge(df_cutn, df_ours, on='filename', how="outer", suffixes
 merged_df = pd.merge(merged_itensors_df, merged_cutn_df, on='filename', how="outer")
 
 print(merged_df)
+merged_df.to_csv("comparison_table.csv")
