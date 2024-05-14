@@ -28,7 +28,7 @@ For *ITensors.jl*, enter the Julia REPL and press `]` to enter the package manag
 The main files to run the experiment for each of the libraries are:
 - `itensors_mps.jl` -> Runs using ITensors (both CPU and GPU backends are available) run as `julia <path_to_tket_circ.json> "GPU" "chi" <chi_value>`, or replace with `"GPU"` with `"CPU"`. It is possible to set `"trunc_error"` instead of `"chi"`. The folder `ITensors_MPS_interface` contains an auxiliar Julia package that this script uses.
 - `cutn_mps.py` -> Runs using cuTensorNet's high-level API implementation of MPS. Run as `python cutn_mps.py <path_to_tket_circ.json> <chi_value>`.
-- `pytket-cuTN_mps.py` -> Run using pytket-cutensornet. Run as `python pytket-cuTN_mps.py <path_to_tket_circ.json> "chi" <chi_value>`. It is possible to set `"trunc_error"` instead of `"chi"`.
+- `pytket-cuTN_mps.py` -> Run using pytket-cutensornet. Run as `python pytket-cuTN_mps.py "chi" <chi_value>`. It is possible to set `"trunc_error"` instead of `"chi"`. This script will simulate all circuits it finds in the folder `selected_circs`. This is so that the experiment could be more easily sent as a batch job to Perlmutter. Modifying the script so that it accepts a single json file as input should be straightforward, and would remove the dependency to `mpi4py`.
 
 ### Circuits
 
