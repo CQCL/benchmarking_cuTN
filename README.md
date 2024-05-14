@@ -1,6 +1,9 @@
 
 # benchmarking_cuTN
-Quick and dirty repository to benchmark pytket-cutensornet against Quimb and ITensors
+Quick and dirty repository to benchmark pytket-cutensornet's MPS methods against other libraries. Different branches contain different experiments:
+
+- `main`: compare pytket-cutensornet's MPS versus ITensors (on CPU and GPU) and NVIDIA's own MPS implementation (cuTensorNet). The conclusions of the experiment appear in this Confluence page.
+- `old_itensors_vs_quimb_vs_pytketcutn`: compare pytket-cutensornet's MPS versus ITensors (on CPU) and Quimb. Since Quimb was shown to perform considerably worse than ITensors, and the latter appears in the experiment in `main` branch, I consider this branch deprecated and only keep it for tracking. The conclusions of the experiment appear in this [Confluence page](https://cqc.atlassian.net/wiki/spaces/TKET/pages/2791374886/Benchmarking+against+ITensors+and+Quimb).
 
 ## Requirements
 
@@ -10,38 +13,22 @@ Quick and dirty repository to benchmark pytket-cutensornet against Quimb and ITe
 - An NVIDIA GPU with compute capability +7.0
 - cuQuantum Python
 
-- pytket-cutensornet version 0.4.0
-- Quimb
+- pytket-cutensornet version 0.6.0
 - ITensors.jl
+- CUDA.jl
 
 ## Installation instructions
 
 For *cuQuantum* and *pytket-cutensornet* follow the instructions in https://github.com/CQCL/pytket-cutensornet. Installing through pip should allow you to choose the appropriate version.
 
-For *Quimb*, follow https://quimb.readthedocs.io/en/latest/installation.html. Doing `pip install quimb` worked for me.
-
-For *ITensors.jl*, enter the Julia REPL and press `]` to enter the package manager. Type `add ITensors`.
-
-### Installing ITensors_MPS_interface.jl
-
-Install pyCall:
-- `pip install julia`
-- In Python REPL, `import julia` followed by `julia.install()`
-
-Test pyCall installation was successful by entering the Python REPL and typing:
- ```
-from julia.api import Julia
-jl = Julia(compiled_modules=False)
-from julia import Base
-Base.sind(60)
- ```
-
-Move the contents of the folder `ITensors_MPS_interface` in this repository to `~/.julia/dev/ITensors_MPS_interface`. Then, open the Julia REPL and press `]` to enter the package manager. Locally install the package by typing:
- `dev ~/.julia/dev/ITensors_MPS_interface`.
+For *ITensors.jl*, enter the Julia REPL and press `]` to enter the package manager. Type `add ITensors` followed by `add CUDA` and, finally, `dev ITensors_MPS_interface`.
 
 ## Contents
 
-The three `*_mps.py` files at the root of this repository each run the circuits with a different library (pytket-cutensornet, ITensors and Quimb). The folder `ITensors_MPS_interface` contains the Julia package that interfaces between ITensors and `itensors_mps.py`.
+The main files to run the experiment for each of the libraries are:
+- `itensors_mps.jl` -> Runs using ITensors (both CPU and GPU backends are available) run as `julia <path_to_tket_circ.json> "GPU" "chi" <chi_value>`, or replace with `"GPU"` with `"CPU"`. It is possible to set `"trunc_error"` instead of `"chi"`. The folder `ITensors_MPS_interface` contains an auxiliar Julia package that this script uses.
+- `cutn_mps.py` -> Runs using cuTensorNet's high-level API implementation of MPS. Run as `python cutn_mps.py <path_to_tket_circ.json> <chi_value>`.
+- `pytket-cuTN_mps.py` -> Run using pytket-cutensornet. Run as `python pytket-cuTN_mps.py "chi" <chi_value>`. It is possible to set `"trunc_error"` instead of `"chi"`. This script will simulate all circuits it finds in the folder `selected_circs`. This is so that the experiment could be more easily sent as a batch job to Perlmutter. Modifying the script so that it accepts a single json file as input should be straightforward, and would remove the dependency to `mpi4py`.
 
 ### Circuits
 
@@ -49,8 +36,8 @@ The circuits used for the benchmarking can be found in the ZIP file `Circuits.zi
 
 ### Results
 
-The `Results` folder contains a CSV file with the results, along with the scripts necessary to create this CSV from the output of the different `*_mps.py` files at the root of this repository. The script `create_plots.py` reads the CSV file and generates some relevant figures; the directory `Results/Figures` contains the these.
+The `Results/chi300` folder contains a `comparison_table.csv` file with the results for an experiment with `chi=300`, along with the scripts necessary to create this CSV from the output of the different main script files described above; each of the `results_*.csv` files correspond to the output of the corresponding main script. The script `plots.py` reads the CSV file and generates some relevant figures.
 
-![Comparison of pytket-cutensornet versus ITensors](https://github.com/CQCL/benchmarking_cuTN/blob/main/Results/Figures/cutn_ITensors.png)
+**NOTE**: the file `Results/chi300/results_itensors.csv` contains both the results for CPU and GPU. However, the GPU results come from using `ITensorGPU`, rather than `ITensors` on GPUs via `CUDA.jl`. The latter is the approach currently in this repository, while the former is a [soon-to-be-deprecated library](https://github.com/ITensor/ITensors.jl/issues/1396) that currently runs faster on GPUs than the latter. The code for `ITensorGPU` can be recovered by inspecting the commit history, but I do not recommend it, as it is very finicky to install and they intend to drop support for it. In theory, `ITensors` using `CUDA.jl` should eventually be running as fast (or faster) than `ITensorGPU`, but this is not the case at the time of writing.
 
-The results show that the MPS algorithm in pytket-cutensornet runs faster than the same MPS algorithm implemented ITensors and Quimb. Most of the time, pytket-cutensornet takes 30% of the runtime of ITensors and 10% of the runtime of Quimb. This speed up is attributed to the use of cuTensorNet and NVIDIA GPUs.
+The results show that the MPS algorithm in pytket-cutensornet runs faster than the same MPS algorithm implemented ITensors running on GPUs. Most of the time, pytket-cutensornet takes less than 60% of the runtime of ITensors. When comparing to NVIDIA's own MPS (in cuTensorNet), we find both libraries have similar performance.
