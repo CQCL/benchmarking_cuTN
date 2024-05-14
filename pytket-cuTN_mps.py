@@ -11,11 +11,8 @@ from pytket.extensions.cutensornet.structured_state import SimulationAlgorithm, 
 
 comm = MPI.COMM_WORLD
 
-if sys.argv[1] != "OURS":
-    raise ValueError("If calling pytket-cutensornet method use OURS as the first argument.")
-
-trunc_mode = sys.argv[2]
-param = sys.argv[3]
+trunc_mode = sys.argv[1]
+param = sys.argv[2]
 
 if trunc_mode == "chi":
     chi = int(param)
@@ -62,5 +59,5 @@ for k, file_path in enumerate(directory.iterdir()):
             print(f"Failed! {filename}, {e}")
             sys.stdout.flush()
 
-with open("results_ours.csv", "a") as data:
-    data.write(entry)
+    with open("results_ours.csv", "a") as data:
+        data.write(entry)
