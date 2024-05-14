@@ -44,6 +44,7 @@ for k, file_path in enumerate(directory.iterdir()):
         cfg = Config(
             chi=chi,
             truncation_fidelity=truncation_fidelity,
+            value_of_zero=0,
         )
         try:
             start_time = t.time()
